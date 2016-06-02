@@ -1,0 +1,12 @@
+argparse
+python-keystoneclient
+python-novaclient
+python-cinderclient
+python-glanceclient
+python-openstackclient
+python-quantumclient
+python-swiftclient
+oslo.config
+oslo.i18n
+oslo.serialization
+oslo.utils
