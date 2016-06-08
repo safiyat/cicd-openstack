@@ -1,17 +1,69 @@
+import os
 import sys
-import json
-import time
+from cicd.common import ConfigHelper, Color
+# from cicd.apt_manage import check_packages
+from cicd.hostfilediff import read_hostfile, hostfile_diff
+from cicd.hostfilediff import print_diff as print_diff_hostfile
+from cicd.vm_info import get_vm_list
+from cicd.yamldiff import read_yaml, yaml_diff
+from cicd.yamldiff import print_diff as print_diff_yaml
 sys.path.insert(0, 'utils.zip')
 from utils import get_parser
 import keystoneutils
 import novautils
 
-from vm_info import get_vm_list
 
-p = get_parser()
-args = p.parse_args()
-session = keystoneutils.get_session(args)
+def main():
+    p = get_parser()
+    args = p.parse_args()
+    session = keystoneutils.get_session(args)
 
-# Collect detailed information about all the VMs in SDCloud
-nc = novautils.get_client(session)
-get_vm_list(nc=nc)
+    conf = ConfigHelper(path='test/cicd.conf')
+    ansible_path, ansible_extra_path = conf.get_conf()
+
+    # package_versions = os.path.join(ansible_path, 'package_versions.yml')
+    # if os.getuid() != 0:
+    #     command = "sudo python -c"\
+    #               "from cicd.apt_manage import check_packages;"\
+    #               "check_packages('%s')" % package_versions
+    #     os.system(command)
+    # else:
+    #     check_packages(package_versions)
+
+    # Hostfile Diff
+    old_hostfile = read_hostfile(os.path.join(ansible_extra_path, 'hostfile'))
+    new_hostfile = read_hostfile(os.path.join(ansible_path, 'hostfile'))
+    unchanged_hosts, deleted_hosts, new_hosts = hostfile_diff(new_hostfile,
+                                                              old_hostfile)
+    print_diff_hostfile(unchanged_hosts, deleted_hosts, new_hosts)
+
+    # Collect detailed information about all the VMs in SDCloud
+    nc = novautils.get_client(session)
+    get_vm_list(nc=nc, filename='test/vm_list.json')
+
+    # YAML Diff
+    print '\n'
+    # base_vars.yml
+    print '\n'
+    old_basevars = read_yaml(os.path.join(ansible_extra_path, 'base_vars.yml'))
+    new_basevars = read_yaml(os.path.join(ansible_path, 'base_vars.yml'))
+    print '%s%s%sbase_vars.yml%s' % (Color.WHITE, Color.ON_BLACK, Color.BOLD,
+                                     Color.NORMAL)
+    unchanged_vars, changed_vars, deleted_vars, new_vars = yaml_diff(
+        new_basevars, old_basevars)
+    print_diff_yaml(new_basevars, old_basevars, unchanged_vars, changed_vars,
+                    deleted_vars, new_vars)
+    # my_vars.yml
+    print '\n'
+    old_myvars = read_yaml(os.path.join(ansible_extra_path, 'my_vars.yml'))
+    new_myvars = read_yaml(os.path.join(ansible_path, 'my_vars.yml'))
+    print '%s%s%smy_vars.yml%s' % (Color.WHITE, Color.ON_BLACK, Color.BOLD,
+                                   Color.NORMAL)
+    unchanged_vars, changed_vars, deleted_vars, new_vars = yaml_diff(
+        new_myvars, old_myvars)
+    print_diff_yaml(new_myvars, old_myvars, unchanged_vars, changed_vars,
+                    deleted_vars, new_vars)
+
+
+if __name__ == '__main__':
+    main()

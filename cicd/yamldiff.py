@@ -1,5 +1,6 @@
 import sh
 import re
+from common import Color
 import yaml
 
 # base_vars = read_yaml(
@@ -10,36 +11,6 @@ import yaml
 #     base_vars_new, base_vars)
 # print_diff(base_vars_new, base_vars, unchanged_vars, changed_vars,
 #            deleted_vars, new_vars)
-
-
-class Color:
-    PURPLE = '\033[95m'
-    DARKCYAN = '\033[36m'
-
-    BLACK = '\x1b[30m'
-    RED = '\x1b[31m'
-    GREEN = '\x1b[32m'
-    YELLOW = '\x1b[33m'
-    BLUE = '\x1b[34m'
-    MAGENTA = '\x1b[35m'
-    CYAN = '\x1b[36m'
-    WHITE = '\x1b[37m'
-    BOLD = '\x1b[1m'
-    UNDERLINE = '\x1b[4m'
-    NORMAL = '\x1b(B\x1b[m'
-
-    ON_BLACK = '\x1b[40m'
-    ON_RED = '\x1b[41m'
-    ON_GREEN = '\x1b[42m'
-    ON_YELLOW = '\x1b[43m'
-    ON_BLUE = '\x1b[44m'
-    ON_MAGENTA = '\x1b[45m'
-    ON_CYAN = '\x1b[46m'
-    ON_WHITE = '\x1b[47m'
-
-    REVERSE = '\x1b[7m'
-    NO_UNDERLINE = '\x1b[24m'
-    BLINK = '\x1b[5m'
 
 
 def get_files_changed():
