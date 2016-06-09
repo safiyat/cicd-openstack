@@ -1,7 +1,7 @@
 import os
 import sys
 from cicd.common import ConfigHelper, Color
-# from cicd.apt_manage import check_packages
+from cicd.apt_manage import check_packages
 from cicd.hostfilediff import read_hostfile, hostfile_diff
 from cicd.hostfilediff import print_diff as print_diff_hostfile
 from cicd.vm_info import get_vm_list
@@ -21,16 +21,17 @@ def main():
     conf = ConfigHelper(path='test/cicd.conf')
     ansible_path, ansible_extra_path = conf.get_conf()
 
-    # package_versions = os.path.join(ansible_path, 'package_versions.yml')
-    # if os.getuid() != 0:
-    #     command = "sudo python -c"\
-    #               "from cicd.apt_manage import check_packages;"\
-    #               "check_packages('%s')" % package_versions
-    #     os.system(command)
-    # else:
-    #     check_packages(package_versions)
+    package_versions = os.path.join(ansible_path, 'package_versions.yml')
+    if os.getuid() != 0:
+        command = "sudo python -c"\
+                  "\"from cicd.apt_manage import check_packages;"\
+                  "check_packages('%s')\"" % package_versions
+        os.system(command)
+    else:
+        check_packages(package_versions)
 
     # Hostfile Diff
+    print '\n\n'
     old_hostfile = read_hostfile(os.path.join(ansible_extra_path, 'hostfile'))
     new_hostfile = read_hostfile(os.path.join(ansible_path, 'hostfile'))
     unchanged_hosts, deleted_hosts, new_hosts = hostfile_diff(new_hostfile,
