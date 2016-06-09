@@ -94,7 +94,7 @@ def filter_vms(vm_list, **kwargs):
     if 'status' in kwargs:
         filtered = filter(lambda d: d['status'] == kwargs['status'], filtered)
     if 'hypervisor' in kwargs:
-        filtered = filter(lambda d: d['OS-EXT-SRV-ATTR:hypervisor_hostname'] ==
+        filtered = filter(lambda d: d['OS-EXT-SRV-ATTR:host'] ==
                           kwargs['hypervisor'], filtered)
 
     return filtered
