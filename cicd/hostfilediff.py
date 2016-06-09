@@ -148,57 +148,42 @@ def print_diff(unchanged_hosts, deleted_hosts, new_hosts,
     def print_subtree(tree):
         if type(tree) is dict:
             for key in tree.keys():
-                print '[%s]' % key
+                if len(tree[key]) == 0:
+                    continue
+                print '\n[%s]' % key,
                 print_subtree(tree[key])
         else:
             for ip in tree:
-                print ip
+                print "\n%s" % ip,
 
-    print Color.RED,
+    print Color.RED
     deleted = set(deleted_hosts.keys()) - set(unchanged_hosts.keys())
     for key in deleted:
-        print '[%s]' % key
+        print '[%s]' % key,
         print_subtree(deleted_hosts[key])
 
-    print Color.NORMAL,
-    print
+    print Color.NORMAL
+    print '\n'
 
     unchanged = set(unchanged_hosts.keys()).intersection(
         set(deleted_hosts.keys()).intersection(set(new_hosts.keys())))
     for key in unchanged:
-        print '[%s]' % key
+        print '[%s]' % key,
         print Color.RED,
         print_subtree(deleted_hosts[key])
         if print_unchanged:
-            print Color.NORMAL,
+            print Color.NORMAL
             print_subtree(unchanged_hosts[key])
         print Color.GREEN,
         print_subtree(new_hosts[key])
-        print Color.NORMAL,
+        print Color.NORMAL
+        print
 
-    print Color.GREEN,
-    print
-
+    print Color.GREEN
     new = set(new_hosts.keys()) - set(unchanged_hosts.keys())
     for key in new:
-        print '[%s]' % key
+        print '[%s]' % key,
         print_subtree(new_hosts[key])
-    # if print_unchanged:
-    #     for key in unchanged_vars:
-    #         print Color.BOLD + key + ': ' + Color.NORMAL + str(old[key])
+        print '\n'
 
-    # print Color.RED
-    # for key in deleted_vars:
-    #     print Color.BOLD + key + ': ' + Color.NORMAL + Color.RED + \
-    #         str(old[key])
-
-    # print Color.NORMAL
-    # for key in changed_vars:
-    #     print Color.BOLD + key + Color.NORMAL + ': ' + Color.RED + \
-    #         str(old[key]) + ' ' + Color.GREEN + str(new[key]) + Color.NORMAL
-
-    # print Color.GREEN
-    # for key in new_vars:
-    #     print Color.BOLD + key + ': ' + Color.NORMAL + Color.GREEN + \
-    #         str(new[key])
     print Color.NORMAL
