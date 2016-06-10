@@ -7,6 +7,6 @@
   If the error `command not found` pops up, install `python-pip` and `python-dev` via apt.
   Note: This is a one time step.
 - Edit the **cicd.conf** file to refer to the correct paths.
-  (Run `cicd/common.py` if this is a first time set up.)
+  (Run `cicd/common.py` if this is a first time set up, or if you need to update the paths.)
 - Source the `openrc.sh` file.
 - Run `cicd.py`.

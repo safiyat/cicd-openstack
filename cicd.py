@@ -47,6 +47,7 @@ def main():
     print '%sACTIVE: %s%s' % (Color.GREEN, len(filter_vms(vms, status='ACTIVE')), Color.NORMAL)
     print '%sERROR: %s%s' % (Color.RED, len(filter_vms(vms, status='ERROR')), Color.NORMAL)
     print 'SHUTOFF: %s' % len(filter_vms(vms, status='SHUTOFF'))
+    print 'Total VMs: %s' % len(vms)
 
     # YAML Diff
     print '\n'
@@ -65,6 +66,16 @@ def main():
     old_myvars = read_yaml(os.path.join(ansible_extra_path, 'my_vars.yml'))
     new_myvars = read_yaml(os.path.join(ansible_path, 'my_vars.yml'))
     print '%s%s%smy_vars.yml%s' % (Color.WHITE, Color.ON_BLACK, Color.BOLD,
+                                   Color.NORMAL)
+    unchanged_vars, changed_vars, deleted_vars, new_vars = yaml_diff(
+        new_myvars, old_myvars)
+    print_diff_yaml(new_myvars, old_myvars, unchanged_vars, changed_vars,
+                    deleted_vars, new_vars)
+    # cinder_vars.yml
+    print '\n'
+    old_myvars = read_yaml(os.path.join(ansible_extra_path, 'cinder_vars.yml'))
+    new_myvars = read_yaml(os.path.join(ansible_path, 'cinder_vars.yml'))
+    print '%s%s%scinder_vars.yml%s' % (Color.WHITE, Color.ON_BLACK, Color.BOLD,
                                    Color.NORMAL)
     unchanged_vars, changed_vars, deleted_vars, new_vars = yaml_diff(
         new_myvars, old_myvars)
