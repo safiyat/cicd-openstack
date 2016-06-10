@@ -36,12 +36,13 @@ class ConfigHelper(object):
 
     def __init__(self, path=None):
         if not path:
-            self.path = os.environ['HOME'] + '/cicd.cfg'
+            self.path = os.path.join(os.environ['HOME'], '.cicd.cfg')
         else:
             self.path = path
+        self.path = os.path.abspath(self.path)
         self.conf = ConfigParser.ConfigParser()
 
-    def write_conf(self, ansible_path, ansible_extra=None):
+    def write_conf(self, ansible_path, ansible_extra):
         self.conf = ConfigParser.ConfigParser()
         self.conf.add_section('ansible')
         self.conf.set('ansible', 'ansible', ansible_path)
@@ -65,6 +66,13 @@ class ConfigHelper(object):
         print 'Storing configuration at path %s' % self.path
         print 'Please enter the CI/CD configuration...'
         print '(For the ansible directories, enter including `ansible/`)'
-        ansible_path = raw_input('    Ansible Root Directory:')
-        ansible_extra = raw_input('    Ansible Extras Directory:')
+        ansible_path = raw_input('    Ansible Root Directory: ')
+        ansible_extra = raw_input('    Ansible Extras Directory: ')
         self.write_conf(ansible_path=ansible_path, ansible_extra=ansible_extra)
+
+
+if __name__ == '__main__':
+    # Script run for cicd.conf setup.
+    print 'Running `cicd.conf` setup...'
+    conf = ConfigHelper()
+    conf.init_conf()

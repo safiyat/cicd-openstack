@@ -96,9 +96,3 @@ def check_packages(filename):
         print Color.NORMAL
 
     print border
-
-
-# if __name__ == '__name__':
-#     from common import ConfigHelper
-#     conf = ConfigHelper(path='test/cicd.conf')
-#     ansible_path, ansible_extra_path = conf.get_conf()
