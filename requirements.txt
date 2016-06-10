@@ -1,9 +1,11 @@
 PyYAML
 argparse
+keystoneauth1
 oslo.config
 oslo.i18n
 oslo.serialization
 oslo.utils
+netifaces
 python-apt
 python-cinderclient
 python-glanceclient
@@ -13,3 +15,4 @@ python-openstackclient
 python-quantumclient
 python-swiftclient
 sh
+wrapt

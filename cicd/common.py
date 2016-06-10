@@ -36,7 +36,7 @@ class ConfigHelper(object):
 
     def __init__(self, path=None):
         if not path:
-            self.path = os.path.join(os.environ['HOME'], '.cicd.cfg')
+            self.path = os.path.join(os.environ['HOME'], '.cicd.conf')
         else:
             self.path = path
         self.path = os.path.abspath(self.path)
@@ -73,6 +73,6 @@ class ConfigHelper(object):
 
 if __name__ == '__main__':
     # Script run for cicd.conf setup.
-    print 'Running `cicd.conf` setup...'
+    print 'Running `.cicd.conf` setup...'
     conf = ConfigHelper()
     conf.init_conf()

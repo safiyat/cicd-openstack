@@ -44,7 +44,7 @@ def get_vm_list(output='file', **kwargs):
     else:
         print vm_list_json
 
-    return vm_list_json
+    return json.loads(vm_list_json)
 
 
 def filter_vms(vm_list, **kwargs):
@@ -74,7 +74,6 @@ def filter_vms(vm_list, **kwargs):
         # filters[key] = value
 
     filtered = vm_list
-
     if 'name' in kwargs:
         filtered = filter(lambda d: d['name'] == kwargs['name'], filtered)
     if 'ip_addr' in kwargs:

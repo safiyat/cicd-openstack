@@ -1,10 +1,12 @@
+#! /usr/bin/env python
+
 import os
 import sys
 from cicd.common import ConfigHelper, Color
 from cicd.apt_manage import check_packages
 from cicd.hostfilediff import read_hostfile, hostfile_diff
 from cicd.hostfilediff import print_diff as print_diff_hostfile
-from cicd.vm_info import get_vm_list
+from cicd.vm_info import get_vm_list, filter_vms
 from cicd.yamldiff import read_yaml, yaml_diff
 from cicd.yamldiff import print_diff as print_diff_yaml
 sys.path.insert(0, 'utils.zip')
@@ -18,7 +20,7 @@ def main():
     args = p.parse_args()
     session = keystoneutils.get_session(args)
 
-    conf = ConfigHelper(path='test/cicd.conf')
+    conf = ConfigHelper(path=os.path.join(os.environ['HOME'], '.cicd.conf'))
     ansible_path, ansible_extra_path = conf.get_conf()
 
     package_versions = os.path.join(ansible_path, 'package_versions.yml')
@@ -40,7 +42,11 @@ def main():
 
     # Collect detailed information about all the VMs in SDCloud
     nc = novautils.get_client(session)
-    get_vm_list(nc=nc, filename='test/vm_list.json')
+    vms = get_vm_list(nc=nc, filename='vm_info.json')
+    print '%s%s%s\n' % (Color.BOLD, 'VM States', Color.NORMAL)
+    print '%sACTIVE: %s%s' % (Color.GREEN, len(filter_vms(vms, status='ACTIVE')), Color.NORMAL)
+    print '%sERROR: %s%s' % (Color.RED, len(filter_vms(vms, status='ERROR')), Color.NORMAL)
+    print 'SHUTOFF: %s' % len(filter_vms(vms, status='SHUTOFF'))
 
     # YAML Diff
     print '\n'
