@@ -2,6 +2,7 @@
 
 import os
 import sys
+import paramiko
 from cicd.common import ConfigHelper, Color
 from cicd.apt_manage import check_packages
 from cicd.hostfilediff import read_hostfile, hostfile_diff
@@ -24,13 +25,21 @@ def main():
     ansible_path, ansible_extra_path = conf.get_conf()
 
     package_versions = os.path.join(ansible_path, 'package_versions.yml')
-    if os.getuid() != 0:
-        command = "sudo python -c"\
-                  "\"from cicd.apt_manage import check_packages;"\
-                  "check_packages('%s')\"" % package_versions
-        os.system(command)
-    else:
-        check_packages(package_versions)
+    hostname = 'controller'
+    username = 'ubuntu'
+    password = 'sdcloud#123'
+    client = paramiko.client.SSHClient()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    client.load_system_host_keys()
+    client.connect(hostname=hostname, username=username, password=password)
+    sftp = client.open_sftp()
+    sftp.put('cicd/apt_manage.py', '/tmp/apt_manage.py')
+    sftp.put('cicd/common.py', '/tmp/common.py')
+    sftp.put(package_versions, '/tmp/package_versions.yml')
+    sftp.close()
+    stdin, stdout, stderr = client.exec_command('sudo python /tmp/apt_manage.py')
+    output = stdout.read()
+    print output
 
     # Hostfile Diff
     print '\n\n'

@@ -96,3 +96,7 @@ def check_packages(filename):
         print Color.NORMAL
 
     print border
+
+
+if __name__ == '__main__':
+    check_packages('/tmp/package_versions.yml')
