@@ -80,35 +80,13 @@ def read_hostfile(filename):
     return host_tree
 
 
-# def hostfile_diff(new, old, unchanged_hosts={}, deleted_hosts={},
-#                   new_hosts={}):
-#     print type(new), type(old)
-#     if type(new) is list and type(old) is list:
-#         unchanged_hosts = []
-#         deleted_hosts = []
-#         new_hosts = []
-#         new_hosts.append(list(set(new) - set(old)))
-#         deleted_hosts.append(list(set(old) - set(new)))
-#         unchanged_hosts.append(list(set(new).intersection(set(old))))
-#     elif type(new) is list and type(old) is dict:
-#         new_hosts = new
-#         deleted_hosts = old
-#     elif type(new) is dict and type(old) is list:
-#         new_hosts = new
-#         deleted_hosts = old
-#     else:
-#         new_keys = set(new.keys()) - set(old.keys())
-#         deleted_keys = set(old.keys()) - set(new.keys())
-#         for key in new_keys:
-#             new_hosts[key] = new[key]
-#         for key in deleted_keys:
-#             deleted_hosts[key] = old[key]
-#         for key in list(set(old.keys()).intersection(set(new.keys()))):
-#             u_hosts, d_hosts, n_hosts = hostfile_diff(new[key], old[key])
-#             unchanged_hosts[key] = u_hosts
-#             deleted_hosts[key] = d_hosts
-#             new_hosts[key] = n_hosts
-#     return unchanged_hosts, deleted_hosts, new_hosts
+def get_all(tree):
+    if type(tree) is dict:
+        hosts = []
+        for key in tree:
+            hosts.append(get_all(tree[key]))
+    elif type(tree) is list:
+        return tree
 
 
 def hostfile_diff(new, old):
