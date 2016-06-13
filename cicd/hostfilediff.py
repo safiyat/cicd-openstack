@@ -60,7 +60,12 @@ def read_hostfile(filename):
             if ranged_ip.match(host):
                 leaf_hosts[leaf] += expand_range(host)
             else:
-                leaf_hosts[leaf].append(host)
+                leaf_hosts[leaf
+
+
+
+                ]]]]]]]]]
+                .append(host)
 
     host_tree = {}
     while leaf_hosts:
@@ -84,7 +89,8 @@ def get_all(tree):
     if type(tree) is dict:
         hosts = []
         for key in tree:
-            hosts.append(get_all(tree[key]))
+            hosts += get_all(tree[key])
+        return hosts
     elif type(tree) is list:
         return tree
 

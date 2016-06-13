@@ -10,3 +10,7 @@
   (Run `cicd/common.py` if this is a first time set up, or if you need to update the paths.)
 - Source the `openrc.sh` file.
 - Run `cicd.py`.
+
+
+### Issues
+- `read_hostfile` doesn't read IPs listed below a key with children.
