@@ -5,7 +5,8 @@ import sys
 import paramiko
 from cicd.common import ConfigHelper, Color
 from cicd.apt_manage import check_packages
-from cicd.hostfilediff import read_hostfile, hostfile_diff
+from cicd.fstab import parallel_sftp
+from cicd.hostfilediff import read_hostfile, hostfile_diff, get_all
 from cicd.hostfilediff import print_diff as print_diff_hostfile
 from cicd.vm_info import get_vm_list, filter_vms
 from cicd.yamldiff import read_yaml, yaml_diff
@@ -24,6 +25,13 @@ def main():
     conf = ConfigHelper(path=os.path.join(os.environ['HOME'], '.cicd.conf'))
     ansible_path, ansible_extra_path = conf.get_conf()
 
+    if not os.path.isdir(os.path.join(ansible_path, 'cicd')):
+        os.mkdir(os.path.join(ansible_path, 'cicd'))
+    if not os.path.isdir(os.path.join(ansible_path, 'cicd/pre')):
+        os.mkdir(os.path.join(ansible_path, 'cicd/pre'))
+    if not os.path.isdir(os.path.join(ansible_path, 'cicd/pre/fstab')):
+        os.mkdir(os.path.join(ansible_path, 'cicd/pre/fstab'))
+
     package_versions = os.path.join(ansible_path, 'package_versions.yml')
     hostname = 'controller'
     username = 'ubuntu'
@@ -40,6 +48,13 @@ def main():
     output = stdout.read()
     print output
 
+    # MySQL Backup
+    client = paramiko.client.SSHClient()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    client.load_system_host_keys()
+    client.connect(hostname='10.41.3.201', username='root', password='sdcloud#mysql#123')
+    client.exec_command('sudo su dba; /home/dba/admin/scripts/db_bkp_xtrabkp.sh -cq')
+
     # Hostfile Diff
     print '\n\n'
     old_hostfile = read_hostfile(os.path.join(ansible_extra_path, 'hostfile'))
@@ -48,9 +63,15 @@ def main():
                                                               old_hostfile)
     print_diff_hostfile(unchanged_hosts, deleted_hosts, new_hosts)
 
+    #fstab
+    parallel_sftp(get_all(new_hostfile['connet']),
+                  os.path.join(ansible_path, 'cicd/pre/fstab'))
+    parallel_sftp(get_all(new_hostfile['compute']),
+                  os.path.join(ansible_path, 'cicd/pre/fstab'))
+
     # Collect detailed information about all the VMs in SDCloud
     nc = novautils.get_client(session)
-    vms = get_vm_list(nc=nc, filename='vm_info.json')
+    vms = get_vm_list(nc=nc, filename=os.path.join(ansible_path, 'cicd/pre/vm_info.json'))
     print '%s%s%s\n' % (Color.BOLD, 'VM States', Color.NORMAL)
     print '%sACTIVE: %s%s' % (Color.GREEN, len(filter_vms(vms, status='ACTIVE')), Color.NORMAL)
     print '%sERROR: %s%s' % (Color.RED, len(filter_vms(vms, status='ERROR')), Color.NORMAL)
