@@ -1,7 +1,7 @@
 ## Steps to CI/CD
 
 - Clone the CI/CD project to local.
-- Ensure that the `openrc.sh` file of an admin user is handy.
+- Ensure that the `openrc.sh` file of an admin user is handy, and the hostname **controller** is resolvable.
 - CI/CD project requires the installation of a few python modules (libraries) before it can be run.
   For that, run `pip install -r requirements.txt` from inside the CI/CD project.
   If the error `command not found` pops up, install `python-pip` and `python-dev` via apt.

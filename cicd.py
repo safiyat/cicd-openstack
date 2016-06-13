@@ -27,11 +27,10 @@ def main():
     package_versions = os.path.join(ansible_path, 'package_versions.yml')
     hostname = 'controller'
     username = 'ubuntu'
-    password = 'sdcloud#123'
     client = paramiko.client.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     client.load_system_host_keys()
-    client.connect(hostname=hostname, username=username, password=password)
+    client.connect(hostname=hostname, username=username)
     sftp = client.open_sftp()
     sftp.put('cicd/apt_manage.py', '/tmp/apt_manage.py')
     sftp.put('cicd/common.py', '/tmp/common.py')

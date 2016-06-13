@@ -60,12 +60,7 @@ def read_hostfile(filename):
             if ranged_ip.match(host):
                 leaf_hosts[leaf] += expand_range(host)
             else:
-                leaf_hosts[leaf
-
-
-
-                ]]]]]]]]]
-                .append(host)
+                leaf_hosts[leaf].append(host)
 
     host_tree = {}
     while leaf_hosts:
