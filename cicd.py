@@ -4,8 +4,9 @@ import os
 import sys
 import paramiko
 from cicd.common import ConfigHelper, Color
+from cicd.apt_manage import parallel_get_apt_list
 from cicd.fstab import parallel_sftp
-from cicd.hostfilediff import read_hostfile, hostfile_diff, get_all
+from cicd.hostfilediff import read_hostfile, hostfile_diff, get_all, get_representative
 from cicd.hostfilediff import print_diff as print_diff_hostfile
 from cicd.vm_info import get_vm_list, filter_vms
 from cicd.yamldiff import read_yaml, yaml_diff
@@ -33,23 +34,6 @@ def main():
     if not os.path.isdir(os.path.join(ansible_path, 'cicd/pre/fstab')):
         os.mkdir(os.path.join(ansible_path, 'cicd/pre/fstab'))
 
-    package_versions = os.path.join(ansible_path, 'package_versions.yml')
-    hostname = 'controller'
-    username = 'ubuntu'
-    client = paramiko.client.SSHClient()
-    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    client.load_system_host_keys()
-    client.connect(hostname=hostname, username=username)
-    sftp = client.open_sftp()
-    sftp.put('cicd/apt_manage.py', '/tmp/apt_manage.py')
-    sftp.put('cicd/common.py', '/tmp/common.py')
-    sftp.put(package_versions, '/tmp/package_versions.yml')
-    sftp.close()
-    stdin, stdout, stderr = client.exec_command(
-        'sudo python /tmp/apt_manage.py')
-    output = stdout.read()
-    print output
-
     # MySQL Backup
     client = paramiko.client.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -60,12 +44,17 @@ def main():
         'sudo su dba; /home/dba/admin/scripts/db_bkp_xtrabkp.sh -cq')
 
     # Hostfile Diff
-    print '\n\n'
     old_hostfile = read_hostfile(os.path.join(ansible_extra_path, 'hostfile'))
     new_hostfile = read_hostfile(os.path.join(ansible_path, 'hostfile'))
     unchanged_hosts, deleted_hosts, new_hosts = hostfile_diff(new_hostfile,
                                                               old_hostfile)
     print_diff_hostfile(unchanged_hosts, deleted_hosts, new_hosts)
+
+    # package details
+    hostnames = get_representative(new_hostfile)
+    hostnames = list(set(hostnames) - set(new_hostfile['mysql']) - set(new_hostfile['mons']))
+    username = 'ubuntu'
+    parallel_get_apt_list(hostnames, username, ansible_path)
 
     # fstab
     parallel_sftp(get_all(new_hostfile['connet']),

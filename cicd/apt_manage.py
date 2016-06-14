@@ -1,11 +1,14 @@
 #! /usr/bin/env python
 
 import apt
+import os
+import paramiko
+import time
 import yaml
 from common import Color
 
 
-def check_packages(filename):
+def check_packages(filename, print_diff=True):
     with open(filename, 'r') as stream:
         yml = yaml.load(stream)
 
@@ -84,6 +87,8 @@ def check_packages(filename):
             color = Color.GREEN
         else:
             color = Color.NORMAL
+        if color == Color.NORMAL and print_diff:
+            continue
         print color,
         print '| %s | %s | %s | %s |' % (
             package['name'].ljust(max_package_name),
@@ -94,6 +99,44 @@ def check_packages(filename):
 
     print border
 
+
+def get_apt_list(hostname, username, ansible_path):
+    package_versions = os.path.join(ansible_path, 'package_versions.yml')
+    client = paramiko.client.SSHClient()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    client.load_system_host_keys()
+    client.connect(hostname=hostname, username=username)
+    sftp = client.open_sftp()
+    sftp.put('cicd/apt_manage.py', '/tmp/apt_manage.py')
+    sftp.put('cicd/common.py', '/tmp/common.py')
+    sftp.put(package_versions, '/tmp/package_versions.yml')
+    sftp.close()
+    stdin, stdout, stderr = client.exec_command(
+        'sudo python /tmp/apt_manage.py')
+    output = stdout.read()
+    print '%s%s%s:' % (Color.BOLD, hostname, Color.NORMAL)
+    print output
+    open(os.path.join(ansible_path, 'cicd/pre/package_versions_%s' % hostname),
+         'w').write(output)
+    os._exit(0)
+
+
+def parallel_get_apt_list(hostnames, username, ansible_path):
+    start = time.time()
+    children = []
+    for hostname in hostnames:
+        pid = os.fork()
+        if pid:
+           children.append(pid)
+        else:
+            get_apt_list(hostname, username, ansible_path)
+            os._exit(0)
+
+    for i, child in enumerate(children):
+        os.waitpid(child, 0)
+    # print children
+    print 'Gathered package info from %s hosts in %.2f seconds.' % (
+        len(hostnames), time.time() - start)
 
 if __name__ == '__main__':
     check_packages('/tmp/package_versions.yml')
