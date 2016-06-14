@@ -2,7 +2,6 @@
 
 import apt
 import yaml
-from distutils.version import LooseVersion
 from common import Color
 
 
@@ -42,9 +41,7 @@ def check_packages(filename):
 
             if p['name'] in cache_repo:
                 r = cache_repo[p['name']]
-                versions = r.versions.keys()
-                versions.sort(key=LooseVersion)
-                p['available'] = versions[-1]
+                p['available'] = r.candidate.version
             else:
                 p['available'] = '-'
 
