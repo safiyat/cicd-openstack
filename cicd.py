@@ -4,7 +4,6 @@ import os
 import sys
 import paramiko
 from cicd.common import ConfigHelper, Color
-from cicd.apt_manage import check_packages
 from cicd.fstab import parallel_sftp
 from cicd.hostfilediff import read_hostfile, hostfile_diff, get_all
 from cicd.hostfilediff import print_diff as print_diff_hostfile
@@ -23,7 +22,9 @@ def main():
     session = keystoneutils.get_session(args)
 
     conf = ConfigHelper(path=os.path.join(os.environ['HOME'], '.cicd.conf'))
-    ansible_path, ansible_extra_path = conf.get_conf()
+    config = conf.get_conf()
+    ansible_path = config['ansible']['ansible_path']
+    ansible_extra_path = config['ansible']['ansible_extra']
 
     if not os.path.isdir(os.path.join(ansible_path, 'cicd')):
         os.mkdir(os.path.join(ansible_path, 'cicd'))
@@ -44,7 +45,8 @@ def main():
     sftp.put('cicd/common.py', '/tmp/common.py')
     sftp.put(package_versions, '/tmp/package_versions.yml')
     sftp.close()
-    stdin, stdout, stderr = client.exec_command('sudo python /tmp/apt_manage.py')
+    stdin, stdout, stderr = client.exec_command(
+        'sudo python /tmp/apt_manage.py')
     output = stdout.read()
     print output
 
@@ -52,8 +54,10 @@ def main():
     client = paramiko.client.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     client.load_system_host_keys()
-    client.connect(hostname='10.41.3.201', username='root', password='sdcloud#mysql#123')
-    client.exec_command('sudo su dba; /home/dba/admin/scripts/db_bkp_xtrabkp.sh -cq')
+    client.connect(hostname='10.41.3.201', username='root',
+                   password='sdcloud#mysql#123')
+    client.exec_command(
+        'sudo su dba; /home/dba/admin/scripts/db_bkp_xtrabkp.sh -cq')
 
     # Hostfile Diff
     print '\n\n'
@@ -63,7 +67,7 @@ def main():
                                                               old_hostfile)
     print_diff_hostfile(unchanged_hosts, deleted_hosts, new_hosts)
 
-    #fstab
+    # fstab
     parallel_sftp(get_all(new_hostfile['connet']),
                   os.path.join(ansible_path, 'cicd/pre/fstab'))
     parallel_sftp(get_all(new_hostfile['compute']),
@@ -71,10 +75,14 @@ def main():
 
     # Collect detailed information about all the VMs in SDCloud
     nc = novautils.get_client(session)
-    vms = get_vm_list(nc=nc, filename=os.path.join(ansible_path, 'cicd/pre/vm_info.json'))
+    vms = get_vm_list(nc=nc, filename=os.path.join(ansible_path,
+                                                   'cicd/pre/vm_info.json'))
     print '%s%s%s\n' % (Color.BOLD, 'VM States', Color.NORMAL)
-    print '%sACTIVE: %s%s' % (Color.GREEN, len(filter_vms(vms, status='ACTIVE')), Color.NORMAL)
-    print '%sERROR: %s%s' % (Color.RED, len(filter_vms(vms, status='ERROR')), Color.NORMAL)
+    print '%sACTIVE: %s%s' % (Color.GREEN, len(filter_vms(vms,
+                                                          status='ACTIVE')),
+                              Color.NORMAL)
+    print '%sERROR: %s%s' % (Color.RED, len(filter_vms(vms, status='ERROR')),
+                             Color.NORMAL)
     print 'SHUTOFF: %s' % len(filter_vms(vms, status='SHUTOFF'))
     print 'Total VMs: %s' % len(vms)
 
@@ -105,7 +113,7 @@ def main():
     old_myvars = read_yaml(os.path.join(ansible_extra_path, 'cinder_vars.yml'))
     new_myvars = read_yaml(os.path.join(ansible_path, 'cinder_vars.yml'))
     print '%s%s%scinder_vars.yml%s' % (Color.WHITE, Color.ON_BLACK, Color.BOLD,
-                                   Color.NORMAL)
+                                       Color.NORMAL)
     unchanged_vars, changed_vars, deleted_vars, new_vars = yaml_diff(
         new_myvars, old_myvars)
     print_diff_yaml(new_myvars, old_myvars, unchanged_vars, changed_vars,
