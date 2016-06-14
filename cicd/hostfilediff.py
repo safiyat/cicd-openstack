@@ -34,6 +34,19 @@ def read_hostfile(filename):
         return text[text.rfind('\n[', 0, place_of_birth) +
                     2:].splitlines()[0][:-10]
 
+    def get_childIPs(hostgroup, text):
+        start = text.find('[%s:children]' % hostgroup)
+        end = text.find('\n[', start)
+        if end == -1:  # EOF reached. No '['
+            end = len(text)
+        hosts = text[start:end].splitlines()[1:]
+        ip = re.compile('^\d+\.\d+.\d+.\d+')
+        ips = []
+        for host in hosts:
+            if ip.match(host):
+                ips.append(host)
+        return ips
+
     text = open(filename, 'r').read()
 
     # Remove comments and blank lines
@@ -75,6 +88,7 @@ def read_hostfile(filename):
             else:
                 if parent not in leaf_hosts:
                     leaf_hosts[parent] = {}
+                    leaf_hosts[parent]['IPs'] = get_childIPs(parent, text)
                 leaf_hosts[parent][leaf] = leaf_hosts.pop(leaf)
 
     return host_tree
