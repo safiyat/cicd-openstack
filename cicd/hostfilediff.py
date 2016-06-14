@@ -1,6 +1,7 @@
 import sh
 import re
 import os
+from random import randint
 from common import Color
 
 
@@ -103,6 +104,22 @@ def get_all(tree):
     elif type(tree) is list:
         return tree
 
+
+def get_representative(tree):
+    if type(tree) is dict:
+        hosts = []
+        for key in tree:
+            rep = get_representative(tree[key])
+            if rep:
+                if type(rep) is list:
+                    hosts += rep
+                else:
+                    hosts.append(rep)
+        return hosts
+    elif type(tree) is list:
+        if len(tree) != 0:
+            return tree[randint(0, len(tree) - 1)]
+        return []
 
 def hostfile_diff(new, old):
     unchanged_hosts = {}
