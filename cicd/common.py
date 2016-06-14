@@ -42,21 +42,39 @@ class ConfigHelper(object):
         else:
             self.path = path
         self.path = os.path.abspath(self.path)
-        self.conf = ConfigParser.ConfigParser()
+        self.conf = ConfigParser.ConfigParser(allow_no_value=True)
+        # Structure of conf file
+        self.structure = {'ansible':
+                          {'ansible_path': 'Ansible Root Directory',
+                           'ansible_extra': 'Ansible Extras Directory'}, }
 
-    def write_conf(self, ansible_path, ansible_extra):
-        self.conf = ConfigParser.ConfigParser()
-        self.conf.add_section('ansible')
-        self.conf.set('ansible', 'ansible', ansible_path)
-        self.conf.set('ansible', 'ansible-extra', ansible_extra)
+    def write_conf(self, old_conf, new_conf):
+        self.conf = ConfigParser.ConfigParser(allow_no_value=True)
+        for section in self.structure.keys():
+            self.conf.add_section(section)
+            for option in self.structure[section].keys():
+                # if user did not hit RETURN
+                if new_conf[section][option] != '':
+                    self.conf.set(section, option,
+                                  new_conf[section][option].strip())
+                    pass
+                else:
+                    self.conf.set(section, option,
+                                  old_conf[section][option].strip())
         with open(self.path, 'w') as configfile:
             self.conf.write(configfile)
 
     def read_conf(self):
         self.conf.read(self.path)
-        ansible_path = self.conf.get('ansible', 'ansible')
-        ansible_extra = self.conf.get('ansible', 'ansible-extra')
-        return ansible_path, ansible_extra
+        c = {}
+        for section in self.structure.keys():
+            c[section] = {}
+            for option in self.structure[section].keys():
+                try:
+                    c[section][option] = self.conf.get(section, option)
+                except:
+                    c[section][option] = ''
+        return c
 
     def get_conf(self):
         if os.path.isfile(self.path):
@@ -66,11 +84,19 @@ class ConfigHelper(object):
 
     def init_conf(self):
         print 'Storing configuration at path %s' % self.path
+
         print 'Please enter the CI/CD configuration...'
         print '(For the ansible directories, enter including `ansible/`)'
-        ansible_path = raw_input('    Ansible Root Directory: ')
-        ansible_extra = raw_input('    Ansible Extras Directory: ')
-        self.write_conf(ansible_path=ansible_path, ansible_extra=ansible_extra)
+
+        old_conf = self.read_conf()
+        new_conf = {}
+        for section in self.structure.keys():
+            new_conf[section] = {}
+            for option in self.structure[section].keys():
+                new_conf[section][option] = raw_input(
+                    '\t%s [%s]: ' % (self.structure[section][option],
+                                     old_conf[section][option]))
+        self.write_conf(old_conf, new_conf)
 
 
 if __name__ == '__main__':
