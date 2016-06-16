@@ -7,6 +7,16 @@ import keystoneutils
 import novautils
 
 
+def get(list_of_dict, key, value):
+    """
+    Retrieve dictionaries matching the key-value pair from a list of
+    dictionaries.
+    """
+    o = filter(lambda dictionary: dictionary[key] == value,
+               list_of_dict)
+    return o
+
+
 def get_vm_list(output='file', **kwargs):
     """
     Get a detailed list of all VMs.
@@ -118,6 +128,21 @@ def get_vm_state_count(vm_list):
             vm_state_list[state]['count'] += 1
 
     return vm_state_list
+
+
+def get_vm_state_diff(old, new):
+    vm_state_diff = []
+    for vm in old:
+        vm_new = get(new, 'id', vm['id'])
+        if not vm_new:
+            vm['new_status'] = 'DELETED'
+        elif vm_new[0]['status'] != vm['status']:
+            vm['new_status'] = vm_new[0]['status']
+        else:
+            continue
+        vm_state_diff.append(vm)
+
+    return vm_state_diff
 
 
 def print_vm_info(vm_list):
