@@ -67,12 +67,10 @@ def main():
     vms = get_vm_list(nc=nc, filename=os.path.join(ansible_path,
                                                    'cicd/pre/vm_info.json'))
     print '%s%s%s\n' % (Color.BOLD, 'VM States', Color.NORMAL)
-    print '%sACTIVE: %s%s' % (Color.GREEN, len(filter_vms(vms,
-                                                          status='ACTIVE')),
-                              Color.NORMAL)
-    print '%sERROR: %s%s' % (Color.RED, len(filter_vms(vms, status='ERROR')),
-                             Color.NORMAL)
-    print 'SHUTOFF: %s' % len(filter_vms(vms, status='SHUTOFF'))
+    vm_state_list = get_vm_state_count(vms)
+    for state in vm_state_list:
+        print '%s%s: %s%s' % (vm_state_list[state]['color'], state,
+                              vm_state_list[state]['count'], Color.NORMAL)
     print 'Total VMs: %s' % len(vms)
 
     # YAML Diff

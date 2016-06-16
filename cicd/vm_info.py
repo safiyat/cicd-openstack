@@ -1,6 +1,7 @@
 import sys
 import json
 import time
+from common import Color
 sys.path.insert(0, 'utils.zip')
 import keystoneutils
 import novautils
@@ -97,6 +98,26 @@ def filter_vms(vm_list, **kwargs):
                           kwargs['hypervisor'], filtered)
 
     return filtered
+
+
+def get_vm_state_count(vm_list):
+    vm_state_list = {'ACTIVE': {'color':Color.GREEN, 'count':0},
+                     'ERROR': {'color':Color.RED, 'count':0},
+                     'SHUTOFF': {'color':Color.ON_BLACK, 'count':0}}
+    for vm in vm_list:
+        if vm['status'] == 'ACTIVE':
+            vm_state_list['ACTIVE']['count'] += 1
+        elif vm['status'] == 'ERROR':
+            vm_state_list['ERROR']['count'] += 1
+        elif vm['status'] == 'SHUTOFF':
+            vm_state_list['SHUTOFF']['count'] += 1
+        else:
+            state = vm['status']
+            if state not in vm_state_list:
+                vm_state_list[state] = {'color': Color.NORMAL, 'count': 0}
+            vm_state_list[state]['count'] += 1
+
+    return vm_state_list
 
 
 def print_vm_info(vm_list):

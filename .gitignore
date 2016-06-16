@@ -67,4 +67,5 @@ venv/
 *openrc.sh
 *test*
 vm_info.json
+vm-list*
 *~
