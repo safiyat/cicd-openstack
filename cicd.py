@@ -8,7 +8,7 @@ from cicd.apt_manage import parallel_get_apt_list
 from cicd.fstab import parallel_sftp
 from cicd.hostfilediff import read_hostfile, hostfile_diff, get_all, get_representative
 from cicd.hostfilediff import print_diff as print_diff_hostfile
-from cicd.vm_info import get_vm_list, filter_vms
+from cicd.vm_info import get_vm_list, filter_vms, get_vm_state_count
 from cicd.yamldiff import read_yaml, yaml_diff
 from cicd.yamldiff import print_diff as print_diff_yaml
 sys.path.insert(0, 'utils.zip')
