@@ -46,7 +46,13 @@ class ConfigHelper(object):
         # Structure of conf file
         self.structure = {'ansible':
                           {'ansible_path': 'Ansible Root Directory',
-                           'ansible_extra': 'Ansible Extras Directory'}, }
+                           'ansible_extra': 'Ansible Extras Directory'},
+                          'galera_mysql':
+                          {'hostname': 'IP address or resolvable hostname of '
+                                       'galera mysql node',
+                           'user': 'The user for galera mysql node',
+                           'password': 'The SSH password for the galera mysql '
+                                       'node'}}
 
     def write_conf(self, old_conf, new_conf):
         self.conf = ConfigParser.ConfigParser(allow_no_value=True)
