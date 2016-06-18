@@ -148,8 +148,13 @@ def get_vm_state_diff(old, new):
 def print_vm_info(vm_list):
     if type(vm_list) is not list:
         vm_list = [vm_list]
-    headers = ['ID', 'Name', 'Host', 'User', 'Tenant', 'Status']
-    column_width = [36, 4, 4, 4, 32, 13]
+    if 'new_status' in vm_list[0]:
+        headers = ['ID', 'Name', 'Host', 'User', 'Tenant', 'Status',
+                   'New Status']
+        column_width = [36, 4, 4, 4, 32, 13, 13]
+    else:
+        headers = ['ID', 'Name', 'Host', 'User', 'Tenant', 'Status']
+        column_width = [36, 4, 4, 4, 32, 13]
     output_list = []
     for vm in vm_list:
         info = {'id': vm['id']}
@@ -158,6 +163,8 @@ def print_vm_info(vm_list):
         info['user'] = vm['user_id']
         info['tenant'] = vm['tenant_id']
         info['status'] = vm['status']
+        if 'new_status' in vm:
+            info['new_status'] = vm['new_status']
         output_list.append(info)
 
         if column_width[1] < len(info['name']):
@@ -175,11 +182,21 @@ def print_vm_info(vm_list):
     print '|%s|' % ('|'.join(headers))
     print header_line
     for info in output_list:
-        print '| %s | %s | %s | %s | %s | %s |' % (
-            info['id'].ljust(column_width[0]),
-            info['name'].ljust(column_width[1]),
-            info['hypervisor'].ljust(column_width[2]),
-            info['user'].ljust(column_width[3]),
-            info['tenant'].ljust(column_width[4]),
-            info['status'].ljust(column_width[5]))
+        if 'new_status' in info:
+            print '| %s | %s | %s | %s | %s | %s | %s |' % (
+                info['id'].ljust(column_width[0]),
+                info['name'].ljust(column_width[1]),
+                info['hypervisor'].ljust(column_width[2]),
+                info['user'].ljust(column_width[3]),
+                info['tenant'].ljust(column_width[4]),
+                info['status'].ljust(column_width[5]),
+                info['new_status'].ljust(column_width[6]))
+        else:
+            print '| %s | %s | %s | %s | %s | %s |' % (
+                info['id'].ljust(column_width[0]),
+                info['name'].ljust(column_width[1]),
+                info['hypervisor'].ljust(column_width[2]),
+                info['user'].ljust(column_width[3]),
+                info['tenant'].ljust(column_width[4]),
+                info['status'].ljust(column_width[5]))
     print header_line
